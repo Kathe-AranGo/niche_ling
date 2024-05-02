@@ -57,13 +57,19 @@ source("~/Dropbox/PhD/R_scripts/niche/candi/R/trim_to_shapefile.R")
 ##################################
 
 #load data# 
-#world map
-big_map <- rgdal::readOGR("~/Dropbox/PhD/maps/World_Countries/World_Countries_Generalized.shp")
+#world map with terra
+big_map <- ne_coastline(scale = 50, returnclass = 'sv')
+
+big_map_sp <- as(big_map, "Spatial")
+big_map_sp <- buffer(big_map_sp)
+
+
 #species range data
 read_csv("Palicourea_native_ranges.csv") %>%
   dplyr::select(species, range) -> all_native_ranges
 #botanical map 
 kew_map_level_2 <- rgdal::readOGR("wgsrpd-master/level2/level2.shp")
+
 
 #species list 
 cavendishia1 <- c("Cavendishia aberrans", "Cavendishia adenophora", "Cavendishia albopicata",
@@ -124,7 +130,9 @@ save(occurrences, file = "~/Dropbox/PhD/R_scripts/niche/niche_ling/cavendishia_o
 
 #data cleaning
 occurrences <- remove_dup_locs(occurrences)
-occurrences <- remove_ocean_points(occurrences, world_map = big_map)
+#occurrences <- remove_null_items(occurrences)
+# only run this one here if necessary to run the remove_ocean_points function
+occurrences <- remove_ocean_points(occurrences, world_map = big_map_sp)
 occurrences <- remove_perf_0_90_180(occurrences)
 #occ_data <- remove_points_outside_nat_range(df = occurrences, 
 #                                           botan_map = kew_map_level_2, 
@@ -132,12 +140,13 @@ occurrences <- remove_perf_0_90_180(occurrences)
 occurrences <- remove_lessthan(occurrences, n = 10)
 occurrences <- remove_null_items(occurrences)
 
-save(occurrences, file = "~/Desktop/Palicourea/Manuscript/niche/occurrences_filtered.RData")
+
+save(occurrences, file = "~/Dropbox/PhD/R_scripts/niche/niche_ling/occurrences_filtered.RData")
 
 ## CLIMATE DATA PREP PATHWAY ##
 ###############################
 
-load("~/Desktop/Palicourea/Manuscript/niche/occurrences_filtered.RData")
+load("~/Dropbox/PhD/R_scripts/niche/niche_ling/occurrences_filtered.RData")
 
 coords<-c("longitude","latitude")
 coordinates = lapply(occurrences, "[", , coords)
