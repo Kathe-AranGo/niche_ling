@@ -2,7 +2,7 @@
 ### 1.Extracting and cleaning occurrence and environmental data for large datasets with CANDI pipeline###
 # Modified from Tribble et al. 2023.
 #########################################################################################################
-setwd("/Users/katherin_ag/PhD/R_scripts/niche/niche_cavendishia")
+setwd("/Users/katherin_ag/PhD/R_scripts/niche/niche_ling")
 
 require("rJava")
 library("rgdal")  ## Not sure how to download this one yet
@@ -19,7 +19,7 @@ library("ggplot2")
 library("sf")
 library("BIEN")
 library("rgbif")
-library("maptools")
+library("maptools") ## Not available for this version of R
 library("dplyr")
 library("rlist")
 library("devtools")
@@ -27,7 +27,7 @@ library("ggfortify")
 library("nicheROVER")
 library("phytools")
 library("ape")
-library("ComplexHeatmap")
+library("ComplexHeatmap") ## Not available for this version of R
 library("geiger")
 library("phytools")
 library("phangorn")
@@ -36,29 +36,29 @@ library("circlize")
 library('RColorBrewer')
 
 #source CANDI functions
-source("~/Applications/candi/R/get_occ_records.R")
-source("~/Applications/candi/R/get_both_occ_records.R")
-source("~/Applications/candi/R/get_bien_occ_records.R")
-source("~/Applications/candi/R/get_gbif_occ_records.R")
-source("~/Applications/candi/R/remove_dup_locs.R")
-source("~/Applications/candi/R/remove_ocean_points.R")
-source("~/Applications/candi/R/remove_perf_0_90_180.R")
-source("~/Applications/candi/R/remove_lessthan.R")
-source("~/Applications/candi/R/remove_null_items.R")
-source("~/Applications/candi/R/get_world_clim.R")
-source("~/Applications/candi/R/make_corr_matrix.R")
-source("~/Applications/candi/R/remove_corr_variables.R")
-source("~/Applications/candi/R/remove_points_outside_nat_range.R")
-source("~/Applications/candi/R/model_niches.R")
-source("~/Applications/candi/R/get_world_clim.R")
-source("~/Applications/candi/R/trim_to_shapefile.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/get_occ_records.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/get_both_occ_records.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/get_bien_occ_records.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/get_gbif_occ_records.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/remove_dup_locs.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/remove_ocean_points.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/remove_perf_0_90_180.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/remove_lessthan.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/remove_null_items.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/get_world_clim.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/make_corr_matrix.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/remove_corr_variables.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/remove_points_outside_nat_range.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/model_niches.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/get_world_clim.R")
+source("~/Dropbox/PhD/R_scripts/niche/candi/R/trim_to_shapefile.R")
 
 ## OCCURRENCE DATA PREP PATHWAY ##
 ##################################
 
 #load data# 
 #world map
-big_map <- rgdal::readOGR("gadm28_adm0/gadm28_adm0.shp")
+big_map <- rgdal::readOGR("~/Dropbox/PhD/maps/World_Countries/World_Countries_Generalized.shp")
 #species range data
 read_csv("Palicourea_native_ranges.csv") %>%
   dplyr::select(species, range) -> all_native_ranges
@@ -66,38 +66,61 @@ read_csv("Palicourea_native_ranges.csv") %>%
 kew_map_level_2 <- rgdal::readOGR("wgsrpd-master/level2/level2.shp")
 
 #species list 
-my_species1<-c("Palicourea acanthacea","Palicourea acuminata","Palicourea allenii","Palicourea amethystina","Palicourea andina")
-my_species2<-c("Palicourea angustifolia","Palicourea apicata","Palicourea bangii","Palicourea brachiata","Palicourea brevicollis","Palicourea lasiantha")
-my_species3<-c("Palicourea conephoroides","Palicourea correae","Palicourea corymbifera","Palicourea crocea","Palicourea croceoides", "Palicourea cyanococca","Palicourea demissa","Palicourea didymocarpos")
-my_species4<-c("Palicourea divaricata","Palicourea domingensis","Palicourea egensis","Palicourea flavescens","Palicourea flavifolia","Palicourea glomerulata")
-my_species5<-c("Palicourea grandiflora", "Palicourea guianensis","Palicourea hazenii","Palicourea lehmannii","Palicourea lineata","Palicourea loxensis","Palicourea luteonivea")
-my_species6<-c("Palicourea macrobotrys","Palicourea marcgravii","Palicourea padifolia","Palicourea petiolaris","Palicourea polycephala","Palicourea pyramidalis","Palicourea quadrifolia")
-my_species7<-c("Palicourea quinquepyrena","Palicourea racemosa","Palicourea rhodothamna","Palicourea rigida","Palicourea seemannii","Palicourea standleyana","Palicourea stenosepala")
-my_species8<-c("Palicourea stipularis","Palicourea subfusca","Palicourea sulphurea","Palicourea tetragona","Palicourea thyrsiflora","Palicourea timbiquensis","Palicourea tinctoria")
-my_species9<-c("Palicourea topoensis","Palicourea triphylla","Palicourea sessilis","Palicourea woronovii","Palicourea brachypoda","Palicourea berteroana","Palicourea winkleri")
-my_species10<-c("Palicourea callithrix","Palicourea deflexa","Palicourea elata","Palicourea gracilenta","Palicourea justiciifolia","Palicourea ostreophora","Palicourea obliquinervia", "Psychotria rosea")
-my_species11<-c("Palicourea dichotoma","Palicourea tomentosa","Palicourea prunifolia","Palicourea pubescens","Palicourea reticulata","Palicourea suerrensis")
-my_species12<-c("Psychotria suterella","Palicourea glabra","Palicourea_jelskii","Palicourea_nitidella")
+cavendishia1 <- c("Cavendishia aberrans", "Cavendishia adenophora", "Cavendishia albopicata",
+                  "Cavendishia allenii", "Cavendishia amoena", "Cavendishia amplexa",
+                  "Cavendishia angustifolia", "Cavendishia antioquiensis", "Cavendishia arizonensis",
+                  "Cavendishia atroviolacea", "Cavendishia aurantiaca", "Cavendishia awa",
+                  "Cavendishia axillaris", "Cavendishia barnebyi", "Cavendishia bomareoides",
+                  "Cavendishia bracteata", "Cavendishia callista", "Cavendishia calycina",
+                  "Cavendishia capitulata", "Cavendishia caudata")
+cavendishia2 <- c("Cavendishia chiriquiensis", "Cavendishia chlamydantha", "Cavendishia chocoensis",
+                  "Cavendishia ciliata", "Cavendishia coccinea", "Cavendishia colombiana",
+                  "Cavendishia compacta", "Cavendishia complectens", "Cavendishia confertiflora",
+                  "Cavendishia copeensis", "Cavendishia corei", "Cavendishia cuatrecasasii",
+                  "Cavendishia darienensis", "Cavendishia davidsei", "Cavendishia dendrophila",
+                  "Cavendishia divaricata", "Cavendishia dulcis", "Cavendishia endresii",
+                  "Cavendishia engleriana", "Cavendishia erythrostegia")
+cavendishia3 <- c("Cavendishia foreroi", "Cavendishia fortunensis", "Cavendishia fusiformis",
+                  "Cavendishia gentryi", "Cavendishia glandulosa", "Cavendishia gomezii",
+                  "Cavendishia grandifolia", "Cavendishia grossa", "Cavendishia guatapeensis",
+                  "Cavendishia herrerae", "Cavendishia isernii", "Cavendishia jardinensis",
+                  "Cavendishia lactiviscida", "Cavendishia laurifolia", "Cavendishia lebroniae",
+                  "Cavendishia leucantha", "Cavendishia limonensis", "Cavendishia lindauiana",
+                  "Cavendishia linearifolia", "Cavendishia longirachis")
+cavendishia4 <- c("Cavendishia luteynii", "Cavendishia macrocephala", "Cavendishia mariae",
+                  "Cavendishia martii", "Cavendishia megabracteata", "Cavendishia melastomoides",
+                  "Cavendishia micayensis", "Cavendishia morii", "Cavendishia neblinae",
+                  "Cavendishia nitens", "Cavendishia nitida", "Cavendishia nobilis",
+                  "Cavendishia nuda", "Cavendishia oligantha", "Cavendishia orthosepala",
+                  "Cavendishia osaensis", "Cavendishia palustris", "Cavendishia panamensis",
+                  "Cavendishia parviflora", "Cavendishia pedicellata")
+cavendishia5 <- c("Cavendishia pilobracteata", "Cavendishia pilosa", "Cavendishia porphyrea",
+                  "Cavendishia pseudopedunculata", "Cavendishia pseudostenophylla",
+                  "Cavendishia pubescens", "Cavendishia punctata", "Cavendishia quercina",
+                  "Cavendishia quereme", "Cavendishia revoluta", "Cavendishia rhynchophylla",
+                  "Cavendishia ruiz-teranii", "Cavendishia santafeensis",
+                  "Cavendishia sessiliflora", "Cavendishia sirensis", "Cavendishia sophoclesioides",
+                  "Cavendishia speciosa", "Cavendishia spicata", "Cavendishia stenophylla",
+                  "Cavendishia subamplexicaulis")
+cavendishia6 <- c("Cavendishia subfasciculata", "Cavendishia talamancensis",
+                  "Cavendishia tarapotana", "Cavendishia tenella", "Cavendishia trujilloensis",
+                  "Cavendishia tryphera", "Cavendishia uniflora", "Cavendishia urophylla",
+                  "Cavendishia venosa", "Cavendishia vinacea", "Cavendishia violacea",
+                  "Cavendishia viridiflora", "Cavendishia wercklei", "Cavendishia zamorensis")
 
 
 
 #download occurrence data from "bien" AND "gbif".
-occ_data1 <- get_occ_records(species = my_species1, database = "both")
-occ_data2 <- get_occ_records(species = my_species2, database = "both")
-occ_data3 <- get_occ_records(species = my_species3, database = "both")
-occ_data4 <- get_occ_records(species = my_species4, database = "both")
-occ_data5 <- get_occ_records(species = my_species5, database = "both")
-occ_data6 <- get_occ_records(species = my_species6, database = "both")
-occ_data7 <- get_occ_records(species = my_species7, database = "both")
-occ_data8 <- get_occ_records(species = my_species8, database = "both")
-occ_data9 <- get_occ_records(species = my_species9, database = "both")
-occ_data10 <- get_occ_records(species = my_species10, database = "both")
-occ_data11 <- get_occ_records(species = my_species11, database = "both")
-occ_data12 <- get_occ_records(species = my_species12, database = "both")
+occ_data1 <- get_occ_records(species = cavendishia1, database = "both")
+occ_data2 <- get_occ_records(species = cavendishia2, database = "both")
+occ_data3 <- get_occ_records(species = cavendishia3, database = "both")
+occ_data4 <- get_occ_records(species = cavendishia4, database = "both")
+occ_data5 <- get_occ_records(species = cavendishia5, database = "both")
+occ_data6 <- get_occ_records(species = cavendishia6, database = "both")
 
-occurrences<-c(occ_data1,occ_data2,occ_data3,occ_data4,occ_data5,occ_data6,occ_data7,
-               occ_data8,occ_data9,occ_data10,occ_data11,occ_data12)
-save(occurrences, file = "~/Desktop/Palicourea/Manuscript/niche/occurrences_raw.RData")
+
+occurrences <- c(occ_data1,occ_data2,occ_data3,occ_data4,occ_data5,occ_data6)
+save(occurrences, file = "~/Dropbox/PhD/R_scripts/niche/niche_ling/cavendishia_occurrences_raw.RData")
 
 #data cleaning
 occurrences <- remove_dup_locs(occurrences)
